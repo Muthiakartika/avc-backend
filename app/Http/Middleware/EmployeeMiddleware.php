@@ -15,7 +15,7 @@ class EmployeeMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->check() && auth()->user()->role === 'clientEmployee') {
+        if (auth()->check() && auth()->user()->role === 'employee') {
             return $next($request);
         }
         return response()->json(['message' => 'Forbidden'], 403);

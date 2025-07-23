@@ -13,11 +13,6 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
 
-    //adding auto ngok (temp)
-    ->withProviders([
-        \App\Providers\NgrokCorsServiceProvider::class,
-    ])
-
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->api(prepend: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
@@ -25,10 +20,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
-            'isAdmin' => \App\Http\Middleware\AdminMiddleware::class,
-            'isHr' => \App\Http\Middleware\HRMiddleware::class,
-            'isEmployee' => \App\Http\Middleware\EmployeeMiddleware::class,
-
+            'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'hr' => \App\Http\Middleware\HRMiddleware::class,
+            'user' => \App\Http\Middleware\EmployeeMiddleware::class,
         ]);
 
         //

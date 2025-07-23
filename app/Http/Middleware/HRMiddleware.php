@@ -15,7 +15,7 @@ class HRMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->check() && auth()->user()->role === 'clientHr') {
+        if (auth()->check() && auth()->user()->role === 'hr') {
             return $next($request);
         }
         return response()->json(['message' => 'Forbidden'], 403);
