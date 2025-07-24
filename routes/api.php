@@ -1,9 +1,12 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\URL;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -39,7 +42,21 @@ Route::middleware('auth:api')->get('/whoami', function () {
     ]);
 });
 
-Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill();
-    return response()->json(['message' => 'Email verified']);
-})->middleware(['auth:api', 'signed'])->name('verification.verify');
+Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
+    $user = \App\Models\User::findOrFail($id);
+
+    // Cek apakah hash cocok
+    if (!hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
+        return response()->json(['message' => 'Invalid or expired verification link.'], 403);
+    }
+
+    // Cek apakah sudah verifikasi
+    if ($user->hasVerifiedEmail()) {
+        return response()->json(['message' => 'Email already verified.']);
+    }
+
+    // Tandai sebagai terverifikasi
+    $user->markEmailAsVerified();
+
+    return response()->json(['message' => 'Email verified successfully.']);
+})->middleware(['signed'])->name('verification.verify');
