@@ -28,17 +28,23 @@ class AppServiceProvider extends ServiceProvider
             return config('app.frontend_url')."/password-reset/$token?email={$notifiable->getEmailForPasswordReset()}";
         });
 
+        // NOTE: This is the new email verification link generation logic.
         VerifyEmail::createUrlUsing(function (object $notifiable) {
-            $verificationUrl = URL::temporarySignedRoute(
-                name: 'verification.verify',
-                expiration: Carbon::now()->addMinutes(Config::get(key: 'auth.verification.expire', default: 60)),
-                parameters: [
+            // 1. Generate the original, signed backend verification URL.
+            $backendVerificationUrl = URL::temporarySignedRoute(
+                'verification.verify',
+                Carbon::now()->addMinutes(Config::get('auth.verification.expire', 60)),
+                [
                     'id' => $notifiable->getKey(),
                     'hash' => sha1($notifiable->getEmailForVerification()),
                 ]
             );
 
-            return config(key: 'app.frontend_url') . "?verification_url=" . $verificationUrl;
+            // 2. Create a new URL that points to your Next.js frontend.
+            //    We will pass the backend verification URL as a query parameter.
+            $frontendVerificationUrl = config('app.frontend_url') . '/verify-email?verify_url=' . urlencode($backendVerificationUrl);
+
+            return $frontendVerificationUrl;
         });
     }
 }
