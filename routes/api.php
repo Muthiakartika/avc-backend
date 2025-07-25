@@ -52,7 +52,7 @@ Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) 
 
     // Cek apakah sudah verifikasi
     if ($user->hasVerifiedEmail()) {
-        return redirect(config('app.frontend_url') . '/already-verified');
+        return response()->json(['message' => 'Already verified'], 200);
     }
 
     // Tandai sebagai terverifikasi
@@ -61,5 +61,9 @@ Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) 
     // Buat token JWT
     $token = JWTAuth::fromUser($user);
 
-    return redirect(config('app.frontend_url') . '/verified-success?token=' . $token);
+    return response()->json([
+        'message' => 'Email verified successfully.',
+        'token' => $token,
+    ], 200);
+
 })->middleware(['signed'])->name('verification.verify');

@@ -98,7 +98,9 @@ class AuthController extends Controller
     public function me() { return response()->json(auth('api')->user()); }
 
     public function logout() {
-        auth('api')->logout();
+        // By passing true, we force the token to be blacklisted.
+        // This is the secure way to handle logout with JWTs.
+        auth('api')->logout(true);
         return response()->json(['message' => 'Successfully logged out']);
     }
 }
